@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:route_tracker_app/core/utils/location_service.dart';
+import 'package:route_tracker_app/features/google_map/presentation/views/widgets/custom_text_field.dart';
 
 class GoogleMapView extends StatefulWidget {
   const GoogleMapView({super.key});
@@ -25,14 +26,29 @@ class _GoogleMapViewState extends State<GoogleMapView> {
 
   @override
   Widget build(BuildContext context) {
-    return GoogleMap(
-      markers: markers,
-      zoomControlsEnabled: false,
-      initialCameraPosition: initalCameraPosition,
-      onMapCreated: (controller) {
-        googleMapController = controller;
-        updateCurrentLocation();
-      },
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            GoogleMap(
+              markers: markers,
+              zoomControlsEnabled: false,
+              initialCameraPosition: initalCameraPosition,
+              onMapCreated: (controller) {
+                googleMapController = controller;
+                updateCurrentLocation();
+              },
+            ),
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: CustomTextField(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -62,3 +78,8 @@ class _GoogleMapViewState extends State<GoogleMapView> {
     }
   }
 }
+
+// create text field
+// Listen to text field
+// search place and show on map
+// display results location on map
