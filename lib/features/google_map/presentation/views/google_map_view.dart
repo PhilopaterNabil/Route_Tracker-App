@@ -13,15 +13,27 @@ class GoogleMapView extends StatefulWidget {
 class _GoogleMapViewState extends State<GoogleMapView> {
   late CameraPosition initalCameraPosition;
   late LocationService locationService;
+  late TextEditingController textEditingController;
   GoogleMapController? googleMapController;
 
   Set<Marker> markers = {};
 
   @override
   void initState() {
+    textEditingController = TextEditingController();
     initalCameraPosition = CameraPosition(target: LatLng(0, 0));
     locationService = LocationService();
+    textEditingController.addListener(() {
+      
+    });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    googleMapController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -44,7 +56,7 @@ class _GoogleMapViewState extends State<GoogleMapView> {
               top: 16,
               left: 16,
               right: 16,
-              child: CustomTextField(),
+              child: CustomTextField(textEditingController: textEditingController),
             ),
           ],
         ),
