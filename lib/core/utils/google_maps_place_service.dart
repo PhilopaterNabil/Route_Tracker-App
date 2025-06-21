@@ -7,8 +7,10 @@ import "package:route_tracker_app/features/google_map/data/models/place_details_
 class GoogleMapsPlacesService {
   final String baseUrl = 'https://maps.googleapis.com/maps/api/place';
   final String apiKey = 'AIzaSyD4PqvgXw20qL9OHeTnGB-vw-ySTvrQRzU';
-  Future<List<PlaceModel>> getPedictions({required String input}) async {
-    var response = await http.get(Uri.parse('$baseUrl/autocomplete/json?key=$apiKey&input=$input'));
+  Future<List<PlaceModel>> getPedictions(
+      {required String input, required String sessionToken}) async {
+    var response = await http.get(Uri.parse(
+        '$baseUrl/autocomplete/json?key=$apiKey&input=$input&sessiontoken=$sessionToken'));
     print('API RESPONSE: ${response.body}');
 
     if (response.statusCode == 200) {
