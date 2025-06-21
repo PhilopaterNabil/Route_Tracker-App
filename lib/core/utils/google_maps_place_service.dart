@@ -1,7 +1,7 @@
 import "dart:convert";
 
 import "package:http/http.dart" as http;
-import "package:route_tracker_app/features/google_map/data/models/place_autocomplete_model/place_autocomplete_model.dart";
+import "package:route_tracker_app/features/google_map/data/models/place_autocomplete_model/place_model.dart";
 
 class GoogleMapsPlacesService {
   final String baseUrl = 'https://maps.googleapis.com/maps/api/place';

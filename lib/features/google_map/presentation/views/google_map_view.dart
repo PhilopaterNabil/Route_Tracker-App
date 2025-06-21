@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:route_tracker_app/core/utils/google_maps_place_service.dart';
 import 'package:route_tracker_app/core/utils/location_service.dart';
-import 'package:route_tracker_app/features/google_map/data/models/place_autocomplete_model/place_autocomplete_model.dart';
+import 'package:route_tracker_app/features/google_map/data/models/place_autocomplete_model/place_model.dart';
 import 'package:route_tracker_app/features/google_map/presentation/views/widgets/custom_list_view.dart';
 import 'package:route_tracker_app/features/google_map/presentation/views/widgets/custom_text_field.dart';
 
