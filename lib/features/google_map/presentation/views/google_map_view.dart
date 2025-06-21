@@ -78,7 +78,7 @@ class _GoogleMapViewState extends State<GoogleMapView> {
                 children: [
                   CustomTextField(textEditingController: textEditingController),
                   SizedBox(height: 16),
-                  CustomListView(places: places),
+                  CustomListView(places: places, googleMapsPlacesService: googleMapsPlacesService),
                 ],
               ),
             ),
