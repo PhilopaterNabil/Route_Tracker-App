@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:route_tracker_app/core/utils/google_maps_place_service.dart';
 import 'package:route_tracker_app/core/utils/location_service.dart';
+import 'package:route_tracker_app/features/google_map/data/models/place_autocomplete_model/place_autocomplete_model.dart';
+import 'package:route_tracker_app/features/google_map/presentation/views/widgets/custom_list_view.dart';
 import 'package:route_tracker_app/features/google_map/presentation/views/widgets/custom_text_field.dart';
 
 class GoogleMapView extends StatefulWidget {
@@ -12,21 +15,33 @@ class GoogleMapView extends StatefulWidget {
 
 class _GoogleMapViewState extends State<GoogleMapView> {
   late CameraPosition initalCameraPosition;
+  late GoogleMapsPlacesService googleMapsPlacesService;
   late LocationService locationService;
   late TextEditingController textEditingController;
   GoogleMapController? googleMapController;
 
   Set<Marker> markers = {};
+  List<PlaceModel> places = [];
 
   @override
   void initState() {
+    googleMapsPlacesService = GoogleMapsPlacesService();
     textEditingController = TextEditingController();
     initalCameraPosition = CameraPosition(target: LatLng(0, 0));
     locationService = LocationService();
-    textEditingController.addListener(() {
-      
-    });
+    fetchPredictions();
     super.initState();
+  }
+
+  void fetchPredictions() {
+    textEditingController.addListener(() async {
+      if (textEditingController.text.isNotEmpty) {
+        var result = await googleMapsPlacesService.getPedictions(input: textEditingController.text);
+        places.clear();
+        places.addAll(result);
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -56,7 +71,12 @@ class _GoogleMapViewState extends State<GoogleMapView> {
               top: 16,
               left: 16,
               right: 16,
-              child: CustomTextField(textEditingController: textEditingController),
+              child: Column(
+                children: [
+                  CustomTextField(textEditingController: textEditingController),
+                  CustomListView(places: places),
+                ],
+              ),
             ),
           ],
         ),
