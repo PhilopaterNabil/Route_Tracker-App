@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:route_tracker_app/core/utils/google_maps_place_service.dart';
 import 'package:route_tracker_app/core/utils/location_service.dart';
+import 'package:route_tracker_app/core/utils/routes_service.dart';
+import 'package:route_tracker_app/features/google_map/data/models/location_info/lat_lng.dart';
+import 'package:route_tracker_app/features/google_map/data/models/location_info/location.dart';
+import 'package:route_tracker_app/features/google_map/data/models/location_info/location_info.dart';
 import 'package:route_tracker_app/features/google_map/data/models/place_autocomplete_model/place_model.dart';
+import 'package:route_tracker_app/features/google_map/data/models/routes_model/routes_model.dart';
 import 'package:route_tracker_app/features/google_map/presentation/views/widgets/custom_list_view.dart';
 import 'package:route_tracker_app/features/google_map/presentation/views/widgets/custom_text_field.dart';
 import 'package:uuid/uuid.dart';
@@ -24,7 +30,11 @@ class _GoogleMapViewState extends State<GoogleMapView> {
   String? sessionToken;
   late Uuid uuid;
   Set<Marker> markers = {};
+  late RoutesService routesService;
   List<PlaceModel> places = [];
+  Set<Polyline> polylines = {};
+
+  late LatLng currentLocation, destinationLocation;
 
   @override
   void initState() {
@@ -33,6 +43,7 @@ class _GoogleMapViewState extends State<GoogleMapView> {
     textEditingController = TextEditingController();
     initalCameraPosition = CameraPosition(target: LatLng(0, 0));
     locationService = LocationService();
+    routesService = RoutesService();
     fetchPredictions();
     super.initState();
   }
@@ -69,6 +80,7 @@ class _GoogleMapViewState extends State<GoogleMapView> {
           children: [
             GoogleMap(
               markers: markers,
+              polylines: polylines,
               zoomControlsEnabled: false,
               initialCameraPosition: initalCameraPosition,
               onMapCreated: (controller) {
@@ -87,11 +99,18 @@ class _GoogleMapViewState extends State<GoogleMapView> {
                   CustomListView(
                     places: places,
                     googleMapsPlacesService: googleMapsPlacesService,
-                    onPlaceSelect: (placeDetails) {
+                    onPlaceSelect: (placeDetails) async {
                       textEditingController.clear();
                       places.clear();
+
                       sessionToken = null;
                       setState(() {});
+                      destinationLocation = LatLng(
+                        placeDetails.geometry!.location!.lat!,
+                        placeDetails.geometry!.location!.lng!,
+                      );
+                      var points = await getRouteData();
+                      displayRoute(points);
                     },
                   ),
                 ],
@@ -107,10 +126,10 @@ class _GoogleMapViewState extends State<GoogleMapView> {
     try {
       var locationData = await locationService.getLocation();
 
-      LatLng currentPosition = LatLng(locationData.latitude!, locationData.longitude!);
+      currentLocation = LatLng(locationData.latitude!, locationData.longitude!);
       Marker currentLocationMarker = Marker(
         markerId: MarkerId('my Location'),
-        position: currentPosition,
+        position: currentLocation,
         icon: BitmapDescriptor.defaultMarker,
       );
       CameraPosition myCurrentCameraPosition = CameraPosition(
@@ -127,6 +146,53 @@ class _GoogleMapViewState extends State<GoogleMapView> {
     } catch (e) {
       // TODO:
     }
+  }
+
+  Future<List<LatLng>> getRouteData() async {
+    LocationInfoModel origin = LocationInfoModel(
+      location: LocationModel(
+        latLng: LatLngModel(
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        ),
+      ),
+    );
+
+    LocationInfoModel destination = LocationInfoModel(
+      location: LocationModel(
+        latLng: LatLngModel(
+          latitude: destinationLocation.latitude,
+          longitude: destinationLocation.longitude,
+        ),
+      ),
+    );
+
+    RoutesModel routes = await routesService.fetchRoutes(origin: origin, destination: destination);
+
+    PolylinePoints polylinePoints = PolylinePoints();
+    List<LatLng> points = getDecodedRoute(polylinePoints, routes);
+
+    return points;
+  }
+
+  List<LatLng> getDecodedRoute(PolylinePoints polylinePoints, RoutesModel routes) {
+    List<PointLatLng> result =
+        polylinePoints.decodePolyline(routes.routes!.first.polyline!.encodedPolyline!);
+
+    List<LatLng> points = result.map((e) => LatLng(e.latitude, e.longitude)).toList();
+    return points;
+  }
+
+  void displayRoute(List<LatLng> points) {
+    Polyline route = Polyline(
+      polylineId: PolylineId('route'),
+      points: points,
+      width: 5,
+      color: Colors.blue,
+    );
+
+    polylines.add(route);
+    setState(() {});
   }
 }
 
